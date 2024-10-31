@@ -1,0 +1,202 @@
+#include "parser.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#test func_create_matrix_1
+    // negative num of rows
+    int func_result = OK;
+    int rows  = -1;
+    int columns = 2;
+    
+    matrix_t matrix_3d;
+
+    func_result = create_matrix(rows, columns, &matrix_3d);
+
+    ck_assert_int_eq(SOME_ERROR, func_result);
+    if (matrix_3d.matrix != NULL) remove_matrix(&matrix_3d);
+
+#test func_creaae_matrix_2
+    // 0 rows
+    int func_result = OK;
+    int rows  = 0;
+    int columns = 2;
+    
+    matrix_t matrix_3d;
+
+    func_result = create_matrix(rows, columns, &matrix_3d);
+
+    ck_assert_int_eq(SOME_ERROR, func_result);
+    if (matrix_3d.matrix != NULL) remove_matrix(&matrix_3d);
+
+#test func_create_matrix_3
+    // negative num of columns
+    int func_result = OK;
+    int rows  = 2;
+    int columns = 0;
+    
+    matrix_t matrix_3d;
+
+    func_result = create_matrix(rows, columns, &matrix_3d);
+
+    ck_assert_int_eq(SOME_ERROR, func_result);
+    if (matrix_3d.matrix != NULL) remove_matrix(&matrix_3d);
+
+#test func_create_matrix_4
+    // 0 columns
+    int func_result = OK;
+    int rows  = 2;
+    int columns = 0;
+    
+    matrix_t matrix_3d;
+
+    func_result = create_matrix(rows, columns, &matrix_3d);
+
+    ck_assert_int_eq(SOME_ERROR, func_result);
+    if (matrix_3d.matrix != NULL) remove_matrix(&matrix_3d);
+
+#test func_create_matrix_5
+    // both 0
+    int func_result = OK;
+    int rows  = 0;
+    int columns = 0;
+    
+    matrix_t matrix_3d;
+
+    func_result = create_matrix(rows, columns, &matrix_3d);
+
+    ck_assert_int_eq(SOME_ERROR, func_result);
+    if (matrix_3d.matrix != NULL) remove_matrix(&matrix_3d);
+
+#test func_create_matrix_6
+    // both negative
+    int func_result = OK;
+    int rows  = -56;
+    int columns = -4;
+    
+    matrix_t matrix_3d;
+
+    func_result = create_matrix(rows, columns, &matrix_3d);
+
+    ck_assert_int_eq(SOME_ERROR, func_result);
+    if (matrix_3d.matrix != NULL) remove_matrix(&matrix_3d);
+
+#test func_create_matrix_7
+    // both positive
+    int func_result = OK;
+    int rows  = 4;
+    int columns = 4;
+    
+    matrix_t matrix_3d;
+
+    func_result = create_matrix(rows, columns, &matrix_3d);
+
+    ck_assert_int_eq(OK, func_result);
+    if (matrix_3d.matrix != NULL) remove_matrix(&matrix_3d);
+
+#test func_remove_matrix_1
+    int func_result = OK;
+    int rows  = 4;
+    int columns = 4;
+    
+    matrix_t matrix_3d;
+    create_matrix(rows, columns, &matrix_3d);
+
+    func_result = remove_matrix(&matrix_3d);
+    ck_assert_int_eq(OK, func_result);
+
+#test func_remove_matrix_2
+    int func_result = OK;
+    
+    matrix_t matrix_3d;
+    matrix_3d.matrix = NULL;
+
+    func_result = remove_matrix(&matrix_3d);
+    ck_assert_int_eq(SOME_ERROR, func_result);
+
+#test func_create_massive_of_polygons_1
+    int func_result = OK;
+    int columns = -4;
+    polygon_t *polygon;
+
+    func_result = create_massive_of_polygons(columns, &polygon);
+    ck_assert_int_eq(SOME_ERROR, func_result);
+
+#test func_create_massive_of_polygons_2
+    int func_result = OK;
+    int columns = 0;
+    polygon_t *polygon;
+
+    func_result = create_massive_of_polygons(columns, &polygon);
+    ck_assert_int_eq(SOME_ERROR, func_result);
+
+#test func_create_massive_of_polygons_3
+    int func_result = OK;
+    int columns = 4;
+    polygon_t *polygon;
+
+    func_result = create_massive_of_polygons(columns, &polygon);
+    ck_assert_int_eq(OK, func_result);
+
+#test func_remove_massive_of_polygons_1
+    int func_result = OK;
+    int columns = 4;
+    polygon_t *polygon;
+
+    create_massive_of_polygons(columns, &polygon);
+
+    func_result = remove_massive_of_polygons(&polygon);
+    ck_assert_int_eq(OK, func_result);
+
+#test func_remove_massive_of_polygons_2
+    int func_result = OK;
+    polygon_t *polygon = NULL;
+
+    func_result = remove_massive_of_polygons(&polygon);
+    ck_assert_int_eq(SOME_ERROR, func_result);
+
+#test main_func_tests_1
+    main_struct obj;
+    obj.count_of_facets = 0;
+    obj.count_of_vertex = 0;
+
+    char *fileName = {"../models/copy_skull.obj"};
+
+    first_parcer_of_file(fileName, &obj);
+
+    create_matrix(obj.count_of_vertex + 1, NUM_OF_ARRAYS, &obj.matrix_3d);
+    create_massive_of_polygons(obj.count_of_facets + 1, &obj.polygons);
+
+    second_parcer_of_file(fileName, &obj);
+
+    ck_assert_float_eq_tol(obj.matrix_3d.matrix[192], -2.01406, 1e-6); // 1 elem from 64 row
+    ck_assert_float_eq_tol(obj.matrix_3d.matrix[10159], 5.74738, 1e-6); // 2 elem from 3386 row
+    ck_assert_float_eq_tol(obj.matrix_3d.matrix[8288], -0.815532, 1e-6); // 3 elem from 2762 row
+
+    remove_matrix(&obj.matrix_3d);
+    remove_massive_of_polygons(&obj.polygons);
+
+#test main_func_tests_2
+    main_struct obj;
+    obj.count_of_facets = 0;
+    obj.count_of_vertex = 0;
+
+    char *fileName = {"../models/cow.obj"};
+
+    first_parcer_of_file(fileName, &obj);
+
+    create_matrix(obj.count_of_vertex + 1, NUM_OF_ARRAYS, &obj.matrix_3d);
+    create_massive_of_polygons(obj.count_of_facets + 1, &obj.polygons);
+
+    second_parcer_of_file(fileName, &obj);
+
+    ck_assert_float_eq_tol(obj.matrix_3d.matrix[97], -1.492705, 1e-6); // 2 elem from 33 row
+    ck_assert_float_eq_tol(obj.matrix_3d.matrix[198], 3.053144, 1e-6); // 1 elem from 67 row
+
+    remove_matrix(&obj.matrix_3d);
+    remove_massive_of_polygons(&obj.polygons);
+
+
+
+
